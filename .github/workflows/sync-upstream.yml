@@ -2,8 +2,8 @@ name: Sync Upstream & Tags
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # 每天北京时间早 8:00 自动检查同步
-  workflow_dispatch:      # 支持随时在 Actions 页面手动点击一键同步
+    - cron: '0 0 * * *'  # 每天北京时间早 8:00 自动检查
+  workflow_dispatch:      # 支持手动一键触发
 
 permissions:
   contents: write
@@ -14,27 +14,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Sync upstream branch and tags
         run: |
-          # 1. 配置 Git 身份
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # 2. 添加原作者 upstream 远程仓库
+          # 1. 添加 upstream 远程仓库
           git remote add upstream https://github.com/ChanTrail/StripchatRecorder.git || true
-
-          # 3. 拉取原作者的所有分支和 Tags
           git fetch upstream --tags
 
-          # 4. 将原作者 main 分支合并到你的当前分支
-          git checkout main
-          git merge upstream/main --no-edit || true
+          # 2. 自动检测 upstream 的默认主分支（main 或 master）
+          UPSTREAM_BRANCH=$(git remote show upstream | grep 'HEAD branch' | cut -d' ' -f5)
+          echo "Upstream main branch is $UPSTREAM_BRANCH"
 
-          # 5. 将更新后的代码和 Tags 推送到你的 GitHub 仓库
-          git push origin main
-          git push origin --tags || true
+          # 3. 强制将本地分支与 upstream 同步
+          git checkout -B $UPSTREAM_BRANCH upstream/$UPSTREAM_BRANCH
+
+          # 4. 推送分支和 Tags 到你的 GitHub 仓库
+          git push origin $UPSTREAM_BRANCH --force
+          git push origin --tags --force
