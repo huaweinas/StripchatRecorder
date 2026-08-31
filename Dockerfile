@@ -55,7 +55,6 @@ RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debi
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     ca-certificates \
-    libssl3 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /app/stripchat-recorder/logs \
