@@ -1,0 +1,26 @@
+name: Sync Upstream
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 每天 UTC 0:00 (北京时间早 8:00) 自动检查同步
+  workflow_dispatch:      # 支持随时在 Actions 页面手动点击一键同步
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    name: Sync with Upstream
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Sync upstream changes
+        uses: a2ren/fork-sync@v1.2.0
+        with:
+          upstream_repository: ChanTrail/StripchatRecorder
+          target_branch: main
+          github_token: ${{ secrets.GITHUB_TOKEN }}
