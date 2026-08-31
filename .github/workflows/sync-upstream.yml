@@ -3,7 +3,7 @@ name: Sync Upstream & Tags
 on:
   schedule:
     - cron: '0 0 * * *'  # 每天北京时间早 8:00 自动检查同步
-  workflow_dispatch:      # 支持手动在 Actions 页面点击一键同步
+  workflow_dispatch:      # 支持在 Actions 页面手动点击一键同步
 
 permissions:
   contents: write
@@ -24,13 +24,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # 1. 添加原作者 upstream 远程仓库
+          # 1. 添加 upstream 远程仓库并拉取最新代码和 Tags
           git remote add upstream https://github.com/ChanTrail/StripchatRecorder.git || true
           git fetch upstream --tags
 
-          # 2. 切换并强制将你的 master 分支与原作者 master 对齐
-          git checkout -B master upstream/master || git checkout -B master upstream/main
+          # 2. 强行将你的 master 分支重置为原作者的 master 分支
+          git checkout master
+          git reset --hard upstream/master
 
-          # 3. 强制推送更新后的 master 分支和 Tags 到你的 GitHub 仓库
+          # 3. 强行将更新后的 master 分支和 Tags 推送到你的 GitHub 仓库
           git push origin master --force
           git push origin --tags --force
